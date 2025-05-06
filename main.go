@@ -1,18 +1,22 @@
 package main
 
 import (
+	"ToDoProject/internal/handler"
+	middleware1 "ToDoProject/internal/middleware"
+	"ToDoProject/internal/repository"
+	"ToDoProject/internal/service"
 	jwtPkg "ToDoProject/pkg/jwt"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-type Claims struct {
-	Username string `json:"username"`
-	jwt.StandardClaims
+var users = map[string]struct {
+	Password string
+	Role     string
+}{
+	"admin": {Password: "admin123", Role: "admin"},
+	"user1": {Password: "user123", Role: "user"},
 }
-
-var jwtKey = []byte("my_secret_key")
 
 func main() {
 	r := gin.Default()
@@ -31,12 +35,13 @@ func main() {
 			return
 		}
 
-		if input.Username != "test_user" || input.Password != "12345" {
+		user, exists := users[input.Username]
+		if !exists || user.Password != input.Password {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 			return
 		}
 
-		token, err := jwtPkg.GenerateToken(input.Username)
+		token, err := jwtPkg.GenerateToken(input.Username, user.Role)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create token"})
 			return
@@ -45,5 +50,27 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"token": token})
 	})
 
-	r.Run(":8080")
+	r.GET("/admin", middleware1.AuthMiddleware("admin"), func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "Welcome Admin!"})
+	})
+
+	r.GET("/user", middleware1.AuthMiddleware("user"), func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "Welcome User!"})
+	})
+
+	todoRepo := repository.NewInMemoryToDoRepository()
+	todoService := service.NewTodoService(todoRepo)
+	todoHandler := handler.NewTodoHandler(todoService)
+	todoHandler.RegisterRoutes(r)
+
+	todoStepRepo := repository.NewInMemoryTodoStepRepository()
+	todoStepService := service.NewTodoStepService(todoStepRepo)
+	todoStepHandler := handler.NewTodoStepHandler(todoStepService)
+	todoStepHandler.RegisterRoutes(r)
+
+	err := r.Run(":8080")
+	if err != nil {
+		return
+	}
+
 }
