@@ -14,95 +14,138 @@ type ToDoRepository interface {
 	Create(list model.TodoList) model.TodoList
 	Update(list model.TodoList) error
 	SoftDelete(id int) error
+	Restore(id int) error
 }
 
 type InMemoryToDoRepository struct {
-	data  []model.TodoList
-	mutex sync.RWMutex
+	todos  map[int]model.TodoList
+	mu     sync.RWMutex
+	nextID int
 }
 
 func NewInMemoryToDoRepository() *InMemoryToDoRepository {
 	return &InMemoryToDoRepository{
-		data: make([]model.TodoList, 0),
+		todos:  make(map[int]model.TodoList),
+		nextID: 1,
 	}
 }
 
 func (r *InMemoryToDoRepository) GetAll() ([]model.TodoList, error) {
-	r.mutex.RLock()
-	defer r.mutex.RUnlock()
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 
 	var result []model.TodoList
-	for _, item := range r.data {
-		if item.DeletedAt == nil {
-			result = append(result, item)
+	for _, todo := range r.todos {
+		if !todo.IsDeleted {
+			result = append(result, todo)
 		}
 	}
 	return result, nil
 }
 
 func (r *InMemoryToDoRepository) GetAllByUsername(username string) ([]model.TodoList, error) {
-	r.mutex.RLock()
-	defer r.mutex.RUnlock()
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 
 	var result []model.TodoList
-	for _, item := range r.data {
-		if item.DeletedAt == nil && item.Username == username {
-			result = append(result, item)
-		}
-
-		if len(result) == 0 {
-			return nil, errors.New("no todos found for the given username")
+	for _, todo := range r.todos {
+		if todo.Username == username && !todo.IsDeleted {
+			result = append(result, todo)
 		}
 	}
 	return result, nil
 }
 
-func (repo *InMemoryToDoRepository) GetById(id int) (*model.TodoList, error) {
-	repo.mutex.RLock()
-	defer repo.mutex.RUnlock()
+func (r *InMemoryToDoRepository) GetById(id int) (*model.TodoList, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 
-	for _, item := range repo.data {
-		if item.ID == id && item.DeletedAt == nil {
-			return &item, nil
-		}
+	todo, exists := r.todos[id]
+	if !exists || todo.IsDeleted {
+		return nil, errors.New("todo bulunamadı")
 	}
-	return nil, errors.New("Not Found")
+	return &todo, nil
 }
 
-func (r *InMemoryToDoRepository) Create(list model.TodoList) model.TodoList {
-	r.mutex.Lock()
-	defer r.mutex.Unlock()
+func (r *InMemoryToDoRepository) Create(todo model.TodoList) model.TodoList {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 
-	list.ID = len(r.data) + 1
-	list.CreatedAt = time.Now()
-	r.data = append(r.data, list)
-	return list
+	todo.ID = r.nextID
+	todo.CreatedAt = time.Now()
+	todo.UpdatedAt = time.Now()
+	todo.IsDeleted = false
+	r.todos[r.nextID] = todo
+	r.nextID++
+	return todo
 }
 
-func (r *InMemoryToDoRepository) Update(updated model.TodoList) error {
-	r.mutex.Lock()
-	defer r.mutex.Unlock()
+func (r *InMemoryToDoRepository) Update(todo model.TodoList) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 
-	for i, item := range r.data {
-		if item.ID == updated.ID && item.DeletedAt == nil {
-			updated.UpdatedAt = time.Now()
-			r.data[i] = updated
-			return nil
-		}
+	existingTodo, exists := r.todos[todo.ID]
+	if !exists || existingTodo.IsDeleted {
+		return errors.New("todo bulunamadı")
 	}
-	return errors.New("Not Found")
+
+	todo.UpdatedAt = time.Now()
+	todo.CreatedAt = existingTodo.CreatedAt
+	todo.IsDeleted = existingTodo.IsDeleted
+	r.todos[todo.ID] = todo
+	return nil
+}
+
+func (r *InMemoryToDoRepository) Delete(id int) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	todo, exists := r.todos[id]
+	if !exists || todo.IsDeleted {
+		return errors.New("todo bulunamadı")
+	}
+
+	now := time.Now()
+	todo.DeletedAt = &now
+	todo.IsDeleted = true
+	todo.UpdatedAt = now
+	r.todos[id] = todo
+	return nil
+}
+
+func (r *InMemoryToDoRepository) Restore(id int) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	todo, exists := r.todos[id]
+	if !exists {
+		return errors.New("todo bulunamadı")
+	}
+
+	if !todo.IsDeleted {
+		return errors.New("todo zaten aktif")
+	}
+
+	todo.IsDeleted = false
+	todo.DeletedAt = nil
+	todo.UpdatedAt = time.Now()
+	r.todos[id] = todo
+	return nil
 }
 
 func (r *InMemoryToDoRepository) SoftDelete(id int) error {
-	r.mutex.Lock()
-	defer r.mutex.Unlock()
+	r.mu.Lock()
+	defer r.mu.Unlock()
 
-	for i, item := range r.data {
-		if item.ID == id && item.DeletedAt == nil {
-			now := time.Now()
-			r.data[i].DeletedAt = &now
-			return nil
-		}
+	todo, exists := r.todos[id]
+	if !exists || todo.IsDeleted {
+		return errors.New("todo bulunamadı")
 	}
-	return errors.New("Not Found")
+
+	now := time.Now()
+	todo.DeletedAt = &now
+	todo.IsDeleted = true
+	todo.UpdatedAt = now
+	r.todos[id] = todo
+	return nil
 }

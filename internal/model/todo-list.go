@@ -10,4 +10,6 @@ type TodoList struct {
 	DeletedAt  *time.Time `json:"deleted_at"`
 	Percentage int        `json:"percentage"`
 	Username   string     `json:"username"`
+	Title      string     `json:"title"`
+	IsDeleted  bool       `json:"is_deleted"`
 }

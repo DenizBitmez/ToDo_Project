@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="admin-header">
+            <h2>Hoş Geldiniz, <span id="username"></span></h2>
+            <button id="logoutButton" class="btn btn-danger">Çıkış Yap</button>
+        </div>
+
+        <div class="todo-list">
+            <h3>Yeni Todo Ekle</h3>
+            <form id="createTodoForm" class="todo-form">
+                <div class="form-group">
+                    <input type="text" id="newTodoTitle" placeholder="Todo başlığı" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Ekle</button>
+            </form>
+        </div>
+
+        <div class="todo-list">
+            <h3>Todo Listesi</h3>
+            <div id="todoList">
+                <!-- Todo'lar JavaScript ile buraya eklenecek -->
+            </div>
+        </div>
+    </div>
+    <script src="/static/js/main.js"></script>
+    <script>
+        document.getElementById('username').textContent = localStorage.getItem('username') || 'Kullanıcı';
+    </script>
+</body>
+</html> 

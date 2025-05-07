@@ -12,6 +12,7 @@ type TodoListService interface {
 	Create(todo model.TodoList) model.TodoList
 	Update(todo model.TodoList) error
 	Delete(todo int) error
+	Restore(id int) error
 }
 
 type todoService struct {
@@ -50,4 +51,8 @@ func (s *todoService) Update(todo model.TodoList) error {
 
 func (s *todoService) Delete(id int) error {
 	return s.repo.SoftDelete(id)
+}
+
+func (s *todoService) Restore(id int) error {
+	return s.repo.Restore(id)
 }

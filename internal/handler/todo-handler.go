@@ -30,6 +30,7 @@ func (h *todoHandler) RegisterRoutes(router *gin.Engine) {
 	adminGroup := router.Group("/admin", middleware.AuthMiddleware("admin"))
 	{
 		adminGroup.GET("/todos", h.GetAll)
+		adminGroup.POST("/todos/:id/restore", h.Restore)
 	}
 }
 
@@ -57,56 +58,123 @@ func (h *todoHandler) GetById(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := strconv.Atoi(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz ID"})
 		return
 	}
 
 	todo, err := h.service.GetById(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Todo not found"})
-		return
-	}
-	c.JSON(http.StatusOK, todo)
-}
-
-func (h *todoHandler) Create(c *gin.Context) {
-	var todo model.TodoList
-	if err := c.ShouldBindJSON(&todo); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Todo bulunamadı"})
 		return
 	}
 
 	username := c.GetString("username")
+	if todo.Username != username {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Bu todo'yu görüntüleme yetkiniz yok"})
+		return
+	}
 
-	todo.Username = username
+	c.JSON(http.StatusOK, todo)
+}
+
+func (h *todoHandler) Create(c *gin.Context) {
+	var input struct {
+		Title string `json:"title" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek formatı"})
+		return
+	}
+
+	username := c.GetString("username")
+	todo := model.TodoList{
+		Title:    input.Title,
+		Username: username,
+	}
 
 	created := h.service.Create(todo)
 	c.JSON(http.StatusCreated, created)
 }
 
 func (h *todoHandler) Update(c *gin.Context) {
-	var todo model.TodoList
-	if err := c.ShouldBindJSON(&todo); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	err := h.service.Update(todo)
+	idParam := c.Param("id")
+	id, err := strconv.Atoi(idParam)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz ID"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Update successfully"})
+	var input struct {
+		Title string `json:"title" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek formatı"})
+		return
+	}
+
+	todo, err := h.service.GetById(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Todo bulunamadı"})
+		return
+	}
+
+	username := c.GetString("username")
+	if todo.Username != username {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Bu todo'yu düzenleme yetkiniz yok"})
+		return
+	}
+
+	todo.Title = input.Title
+	if err := h.service.Update(*todo); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Todo güncellenirken bir hata oluştu"})
+		return
+	}
+
+	c.JSON(http.StatusOK, todo)
 }
 
 func (h *todoHandler) Delete(c *gin.Context) {
-	idStr := c.Param("id")
-	id, _ := strconv.Atoi(idStr)
-
-	err := h.service.Delete(id)
+	idParam := c.Param("id")
+	id, err := strconv.Atoi(idParam)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz ID"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Delete successfully"})
+
+	todo, err := h.service.GetById(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Todo bulunamadı"})
+		return
+	}
+
+	username := c.GetString("username")
+	role := c.GetString("role")
+
+	if role != "admin" && todo.Username != username {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Bu todo'yu silme yetkiniz yok"})
+		return
+	}
+
+	if err := h.service.Delete(id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Todo silinirken bir hata oluştu"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Todo başarıyla silindi"})
+}
+
+func (h *todoHandler) Restore(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz ID"})
+		return
+	}
+
+	if err := h.service.Restore(id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Todo başarıyla geri getirildi"})
 }
