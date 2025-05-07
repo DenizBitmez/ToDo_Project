@@ -20,6 +20,8 @@ Bu proje, **Golang** ve **Gin** framework'ü kullanılarak geliştirilmiş bir T
 * **Kimlik Doğrulama**: JWT
 * **Veritabanı**: In-memory (Mock repository)
 * **API Testi**: Postman
+* **Frontend**: HTML, CSS, JavaScript
+* **Hosting**: Render (frontend için)
 
 ## Kullanıcı Bilgileri
 
@@ -80,6 +82,12 @@ Proje **Clean Architecture** prensiplerine uygun geliştirilmiştir:
 * **Model**: Veri yapıları (struct'lar).
 * **MiddleWare**: Yetkilendirme işlemlerini yapar.
 * **pkg/jwt**: Token işlemlerini yürütür.
+## Frontend
+
+Bu projeye ait bir frontend arayüzü de geliştirilmiştir. HTML, CSS ve JavaScript kullanılarak hazırlanmıştır. Aşağıdaki bağlantıdan uygulamayı canlı olarak görüntüleyebilirsiniz:
+
+🔗 [Canlı Demo (Render)](https://todo-project-69kz.onrender.com)
+
 
 ##  Katkı
 

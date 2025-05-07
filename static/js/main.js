@@ -227,7 +227,7 @@ const todoOperations = {
                 throw new Error('Token bulunamadı. Lütfen tekrar giriş yapın.');
             }
 
-            const response = await fetch('http://localhost:8080/todos', {
+            const response = await fetch(`${API_BASE_URL}/todos`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Accept': 'application/json'
@@ -312,7 +312,7 @@ const todoOperations = {
                 throw new Error('Token bulunamadı. Lütfen tekrar giriş yapın.');
             }
 
-            const response = await fetch('http://localhost:8080/todos', {
+            const response = await fetch(`${API_BASE_URL}/todos`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -358,7 +358,7 @@ const todoOperations = {
                     throw new Error('Token bulunamadı. Lütfen tekrar giriş yapın.');
                 }
 
-                const response = await fetch(`http://localhost:8080/todos/${id}`, {
+                const response = await fetch(`${API_BASE_URL}/todos/${id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -404,7 +404,7 @@ const todoOperations = {
                     throw new Error('Token bulunamadı. Lütfen tekrar giriş yapın.');
                 }
 
-                const response = await fetch(`http://localhost:8080/todos/${id}`, {
+                const response = await fetch(`${API_BASE_URL}/todos/${id}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -449,7 +449,7 @@ const todoStepOperations = {
                 throw new Error('Token bulunamadı. Lütfen tekrar giriş yapın.');
             }
 
-            const response = await fetch(`http://localhost:8080/todos/${todoId}/steps`, {
+            const response = await fetch(`${API_BASE_URL}/todos/${todoId}/steps`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Accept': 'application/json'
@@ -540,7 +540,7 @@ const todoStepOperations = {
                 throw new Error('Token bulunamadı. Lütfen tekrar giriş yapın.');
             }
 
-            const response = await fetch(`http://localhost:8080/todos/${todoId}/steps`, {
+            const response = await fetch(`${API_BASE_URL}/todos/${todoId}/steps`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -586,7 +586,7 @@ const todoStepOperations = {
                     throw new Error('Token bulunamadı. Lütfen tekrar giriş yapın.');
                 }
 
-                const response = await fetch(`http://localhost:8080/todos/${todoId}/steps/${stepId}`, {
+                const response = await fetch(`${API_BASE_URL}/todos/${todoId}/steps/${stepId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -632,7 +632,7 @@ const todoStepOperations = {
                     throw new Error('Token bulunamadı. Lütfen tekrar giriş yapın.');
                 }
 
-                const response = await fetch(`http://localhost:8080/todos/${todoId}/steps/${stepId}`, {
+                const response = await fetch(`${API_BASE_URL}/todos/${todoId}/steps/${stepId}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -675,7 +675,7 @@ const todoStepOperations = {
                 throw new Error('Token bulunamadı. Lütfen tekrar giriş yapın.');
             }
 
-            const response = await fetch(`http://localhost:8080/todos/${todoId}/steps/${stepId}/toggle`, {
+            const response = await fetch(`${API_BASE_URL}/todos/${todoId}/steps/${stepId}/toggle`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
