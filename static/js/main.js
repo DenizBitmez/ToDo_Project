@@ -1,4 +1,9 @@
+// API endpoint'ini dinamik olarak belirle
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:8080'
+    : window.location.origin;
 
+// API istekleri için yardımcı fonksiyonlar
 const api = {
     getToken() {
         return localStorage.getItem('token');
@@ -10,7 +15,7 @@ const api = {
             throw new Error('Token bulunamadı. Lütfen tekrar giriş yapın.');
         }
 
-        const response = await fetch(url, {
+        const response = await fetch(`${API_BASE_URL}${url}`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Accept': 'application/json'
@@ -40,7 +45,7 @@ const api = {
             throw new Error('Token bulunamadı. Lütfen tekrar giriş yapın.');
         }
 
-        const response = await fetch(url, {
+        const response = await fetch(`${API_BASE_URL}${url}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -73,7 +78,7 @@ const api = {
             throw new Error('Token bulunamadı. Lütfen tekrar giriş yapın.');
         }
 
-        const response = await fetch(url, {
+        const response = await fetch(`${API_BASE_URL}${url}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -106,7 +111,7 @@ const api = {
             throw new Error('Token bulunamadı. Lütfen tekrar giriş yapın.');
         }
 
-        const response = await fetch(url, {
+        const response = await fetch(`${API_BASE_URL}${url}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -139,11 +144,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const role = localStorage.getItem('role');
     console.log('Sayfa yüklendi - Token:', token, 'Rol:', role);
 
+    // Eğer token varsa ve doğru sayfada değilsek yönlendir
     if (token) {
         if (role === 'admin' && !window.location.href.includes('/admin')) {
-            window.location.href = 'http://localhost:8080/admin';
+            window.location.href = `${API_BASE_URL}/admin`;
         } else if (role === 'user' && !window.location.href.includes('/dashboard')) {
-            window.location.href = 'http://localhost:8080/dashboard';
+            window.location.href = `${API_BASE_URL}/dashboard`;
         }
     }
 
@@ -156,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 console.log('Giriş denemesi:', username);
-                const response = await fetch('http://localhost:8080/token', {
+                const response = await fetch(`${API_BASE_URL}/token`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -194,10 +200,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (data.role === 'admin') {
                         console.log('Admin paneline yönlendiriliyor...');
-                        window.location.href = 'http://localhost:8080/admin';
+                        window.location.href = `${API_BASE_URL}/admin`;
                     } else {
                         console.log('Dashboard\'a yönlendiriliyor...');
-                        window.location.href = 'http://localhost:8080/dashboard';
+                        window.location.href = `${API_BASE_URL}/dashboard`;
                     }
                 } else {
                     throw new Error('Token alınamadı');

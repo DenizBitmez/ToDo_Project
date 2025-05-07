@@ -28,10 +28,23 @@ func main() {
 
 	// CORS ayarlarını güncelle
 	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"http://localhost:63342", "http://localhost:8080", "http://127.0.0.1:8080"}
+	config.AllowOrigins = []string{
+		"http://localhost:63342",
+		"http://localhost:8080",
+		"http://127.0.0.1:8080",
+		"https://*.onrender.com", // Render.com için wildcard
+		"http://*.onrender.com",  // Render.com için wildcard
+	}
 	config.AllowCredentials = true
-	config.AllowHeaders = []string{"Origin", "Content-Type", "Authorization", "Accept"}
+	config.AllowHeaders = []string{
+		"Origin",
+		"Content-Type",
+		"Authorization",
+		"Accept",
+		"X-Requested-With",
+	}
 	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
+	config.ExposeHeaders = []string{"Content-Length", "Authorization"}
 	r.Use(cors.New(config))
 
 	r.LoadHTMLGlob("templates/*")
