@@ -94,4 +94,4 @@ Bu projeye ait bir frontend arayüzü de geliştirilmiştir. HTML, CSS ve JavaSc
 Katkıda bulunmak isterseniz lütfen fork edip pull request gönderin. Büyük değişiklikler öncesinde issue açmanız önerilir.
 ##  Lisans
 
-MIT Lisansı (veya kullandığın diğer lisans)
+MIT Lisansı
