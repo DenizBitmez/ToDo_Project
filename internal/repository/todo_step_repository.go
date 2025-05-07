@@ -8,10 +8,11 @@ import (
 )
 
 type TodoStepRepository interface {
-	GetAllStepsForTodo(todoId int) ([]model.TodoStep, error)
+	GetAllSteps() ([]model.TodoStep, error)
 	CreateStep(step model.TodoStep) (model.TodoStep, error)
 	UpdateStep(step model.TodoStep) (model.TodoStep, error)
 	DeleteStep(id int) error
+	GetAllStepsByUsername(username string) ([]model.TodoStep, error)
 }
 
 type InMemoryTodoStepRepository struct {
@@ -24,19 +25,28 @@ func NewInMemoryTodoStepRepository() *InMemoryTodoStepRepository {
 		data: make([]model.TodoStep, 0),
 	}
 }
-
-func (repo *InMemoryTodoStepRepository) GetAllStepsForTodo(todoId int) ([]model.TodoStep, error) {
+func (repo *InMemoryTodoStepRepository) GetAllSteps() ([]model.TodoStep, error) {
 	repo.mutex.RLock()
 	defer repo.mutex.RUnlock()
 
 	var steps []model.TodoStep
 	for _, step := range repo.data {
-		if step.TODOID == todoId && step.DeletedAt == nil {
+		if step.DeletedAt == nil {
 			steps = append(steps, step)
 		}
 	}
-	if len(steps) == 0 {
-		return nil, errors.New("no steps found for this todo")
+	return steps, nil
+}
+
+func (repo *InMemoryTodoStepRepository) GetAllStepsByUsername(username string) ([]model.TodoStep, error) {
+	repo.mutex.RLock()
+	defer repo.mutex.RUnlock()
+
+	var steps []model.TodoStep
+	for _, step := range repo.data {
+		if step.Username == username && step.DeletedAt == nil {
+			steps = append(steps, step)
+		}
 	}
 	return steps, nil
 }

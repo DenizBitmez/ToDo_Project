@@ -10,4 +10,5 @@ type TodoStep struct {
 	DeletedAt *time.Time `json:"deleted_at"`
 	Content   string     `json:"content"`
 	Status    int        `json:"status"`
+	Username  string     `json:"username"`
 }

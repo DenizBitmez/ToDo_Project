@@ -16,9 +16,10 @@ type Claims struct {
 }
 
 func GenerateToken(username string, role string) (string, error) {
-	expirationTime := time.Now().Add(5 * time.Minute)
+	expirationTime := time.Now().Add(1 * time.Hour)
 	claims := &Claims{
 		Username: username,
+		Role:     role,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},

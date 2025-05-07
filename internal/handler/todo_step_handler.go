@@ -1,12 +1,12 @@
 package handler
 
 import (
+	"ToDoProject/internal/middleware"
 	"ToDoProject/internal/model"
 	"ToDoProject/internal/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 type todoStepHandler struct {
@@ -17,29 +17,38 @@ func NewTodoStepHandler(service service.TodoStepService) *todoStepHandler {
 	return &todoStepHandler{service: service}
 }
 
-func (h *todoStepHandler) RegisterRoutes(router *gin.Engine) {
-	group := router.Group("/todo_steps")
+func (h *todoStepHandler) RegisterRoutes(r *gin.Engine) {
+	userGroup := r.Group("/steps", middleware.AuthMiddleware("user"))
 	{
-		group.GET("/:todoId", h.GetAllStepsForTodo)
-		group.POST("/", h.CreateStep)
-		group.PUT("/:id", h.UpdateStep)
-		group.DELETE("/:id", h.DeleteStep)
+		userGroup.GET("/", h.GetAllSteps)
+		userGroup.POST("/", h.CreateStep)
+		userGroup.PUT("/", h.UpdateStep)
+		userGroup.DELETE("/", h.DeleteStep)
+	}
+
+	adminGroup := r.Group("/admin/steps", middleware.AuthMiddleware("admin"))
+	{
+		adminGroup.GET("/", h.GetAllSteps)
 	}
 }
 
-func (h *todoStepHandler) GetAllStepsForTodo(c *gin.Context) {
-	todoIdStr := c.Param("todoId")
-	todoId, err := strconv.Atoi(todoIdStr)
+func (h *todoStepHandler) GetAllSteps(c *gin.Context) {
+	username := c.GetString("username")
+	role := c.GetString("role")
+	var steps []model.TodoStep
+	var err error
+
+	if role == "admin" {
+		steps, err = h.service.GetAllStepsForTodo()
+	} else {
+		steps, err = h.service.GetAllSteps(username)
+	}
+
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid todoId"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	steps, err := h.service.GetAllStepsForTodo(todoId)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to retrieve steps"})
-		return
-	}
 	c.JSON(http.StatusOK, steps)
 }
 
@@ -50,13 +59,15 @@ func (h *todoStepHandler) CreateStep(c *gin.Context) {
 		return
 	}
 
-	step.CreatedAt = time.Now()
-	step.UpdatedAt = time.Now()
+	username := c.GetString("username")
+	step.Username = username
+
 	createdStep, err := h.service.CreateStep(step)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create step"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusCreated, createdStep)
 }
 

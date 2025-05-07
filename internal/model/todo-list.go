@@ -9,4 +9,5 @@ type TodoList struct {
 	UpdatedAt  time.Time  `json:"updated_at"`
 	DeletedAt  *time.Time `json:"deleted_at"`
 	Percentage int        `json:"percentage"`
+	Username   string     `json:"username"`
 }

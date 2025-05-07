@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"ToDoProject/internal/middleware"
 	"ToDoProject/internal/model"
 	"ToDoProject/internal/service"
 	"github.com/gin-gonic/gin"
@@ -17,22 +18,35 @@ func NewTodoHandler(service service.TodoListService) *todoHandler {
 }
 
 func (h *todoHandler) RegisterRoutes(router *gin.Engine) {
-	group := router.Group("/todos")
+	userGroup := router.Group("/todos", middleware.AuthMiddleware("user"))
 	{
-		group.GET("/", h.GetAll)
-		group.GET("/:id", h.GetById)
-		group.POST("/", h.Create)
-		group.PUT("/:id", h.Update)
-		group.DELETE("/:id", h.Delete)
+		userGroup.GET("/", h.GetAll)
+		userGroup.POST("/", h.Create)
+		userGroup.GET("/:id", h.GetById)
+		userGroup.PUT("/:id", h.Update)
+		userGroup.DELETE("/:id", h.Delete)
+	}
+
+	adminGroup := router.Group("/admin", middleware.AuthMiddleware("admin"))
+	{
+		adminGroup.GET("/todos", h.GetAll)
 	}
 }
 
 func (h *todoHandler) GetAll(c *gin.Context) {
 	username := c.GetString("username")
-	todos := h.service.GetAllByUsername(username)
+	role := c.GetString("role")
+	var todos []model.TodoList
+	var err error
 
-	if len(todos) == 0 {
-		c.JSON(http.StatusOK, gin.H{"message": "No todos found"})
+	if role == "admin" {
+		todos, err = h.service.GetAll()
+	} else {
+		todos, err = h.service.GetAllByUsername(username)
+	}
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -61,6 +75,11 @@ func (h *todoHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	username := c.GetString("username")
+
+	todo.Username = username
+
 	created := h.service.Create(todo)
 	c.JSON(http.StatusCreated, created)
 }

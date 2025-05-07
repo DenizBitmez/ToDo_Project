@@ -6,10 +6,11 @@ import (
 )
 
 type TodoStepService interface {
-	GetAllStepsForTodo(todoId int) ([]model.TodoStep, error)
+	GetAllSteps(username string) ([]model.TodoStep, error)
 	CreateStep(step model.TodoStep) (model.TodoStep, error)
 	UpdateStep(step model.TodoStep) (model.TodoStep, error)
 	DeleteStep(id int) error
+	GetAllStepsForTodo() ([]model.TodoStep, error)
 }
 
 type todoStepService struct {
@@ -20,8 +21,12 @@ func NewTodoStepService(repo repository.TodoStepRepository) *todoStepService {
 	return &todoStepService{repo: repo}
 }
 
-func (s *todoStepService) GetAllStepsForTodo(todoId int) ([]model.TodoStep, error) {
-	return s.repo.GetAllStepsForTodo(todoId)
+func (s *todoStepService) GetAllSteps(username string) ([]model.TodoStep, error) {
+	return s.repo.GetAllStepsByUsername(username)
+}
+
+func (s *todoStepService) GetAllStepsForTodo() ([]model.TodoStep, error) {
+	return s.repo.GetAllSteps()
 }
 
 func (s *todoStepService) CreateStep(step model.TodoStep) (model.TodoStep, error) {

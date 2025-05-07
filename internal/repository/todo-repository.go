@@ -8,7 +8,8 @@ import (
 )
 
 type ToDoRepository interface {
-	GetTodosByUsername(username string) []model.TodoList
+	GetAll() ([]model.TodoList, error)
+	GetAllByUsername(username string) ([]model.TodoList, error)
 	GetById(id int) (*model.TodoList, error)
 	Create(list model.TodoList) model.TodoList
 	Update(list model.TodoList) error
@@ -26,19 +27,36 @@ func NewInMemoryToDoRepository() *InMemoryToDoRepository {
 	}
 }
 
-func (repo *InMemoryToDoRepository) GetTodosByUsername(username string) []model.TodoList {
-	repo.mutex.RLock()
-	defer repo.mutex.RUnlock()
+func (r *InMemoryToDoRepository) GetAll() ([]model.TodoList, error) {
+	r.mutex.RLock()
+	defer r.mutex.RUnlock()
 
 	var result []model.TodoList
-	for _, item := range repo.data {
-		if item.DeletedAt == nil && item.Name == username {
+	for _, item := range r.data {
+		if item.DeletedAt == nil {
 			result = append(result, item)
 		}
 	}
-
-	return result
+	return result, nil
 }
+
+func (r *InMemoryToDoRepository) GetAllByUsername(username string) ([]model.TodoList, error) {
+	r.mutex.RLock()
+	defer r.mutex.RUnlock()
+
+	var result []model.TodoList
+	for _, item := range r.data {
+		if item.DeletedAt == nil && item.Username == username {
+			result = append(result, item)
+		}
+
+		if len(result) == 0 {
+			return nil, errors.New("no todos found for the given username")
+		}
+	}
+	return result, nil
+}
+
 func (repo *InMemoryToDoRepository) GetById(id int) (*model.TodoList, error) {
 	repo.mutex.RLock()
 	defer repo.mutex.RUnlock()

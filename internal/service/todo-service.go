@@ -6,7 +6,8 @@ import (
 )
 
 type TodoListService interface {
-	GetAllByUsername(username string) []model.TodoList
+	GetAllByUsername(username string) ([]model.TodoList, error)
+	GetAll() ([]model.TodoList, error)
 	GetById(id int) (*model.TodoList, error)
 	Create(todo model.TodoList) model.TodoList
 	Update(todo model.TodoList) error
@@ -21,11 +22,20 @@ func NewTodoService(repo repository.ToDoRepository) *todoService {
 	return &todoService{repo: repo}
 }
 
-func (s *todoService) GetAllByUsername(username string) []model.TodoList {
-	todos := s.repo.GetTodosByUsername(username)
-	return todos
+func (s *todoService) GetAll() ([]model.TodoList, error) {
+	todos, err := s.repo.GetAll()
+	if err != nil {
+		return nil, err
+	}
+	return todos, nil
 }
-
+func (s *todoService) GetAllByUsername(username string) ([]model.TodoList, error) {
+	todos, err := s.repo.GetAllByUsername(username)
+	if err != nil {
+		return nil, err
+	}
+	return todos, nil
+}
 func (s *todoService) GetById(id int) (*model.TodoList, error) {
 	return s.repo.GetById(id)
 }
