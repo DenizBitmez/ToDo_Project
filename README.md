@@ -1,97 +1,99 @@
-# TO-DO App REST API
 
-## Genel Bakış
+# TO-DO App REST API  
 
-Bu proje, **Golang** ve **Gin** framework'ü kullanılarak geliştirilmiş bir TO-DO uygulamasının REST API servisidir. Kullanıcılar yapılacaklar listesi (TO-DO) oluşturabilir, bu listelere adımlar (steps) ekleyebilir ve bunları yönetebilir. Sistemde iki kullanıcı rolü vardır: **normal kullanıcı** ve **admin**.
+## Overview  
 
-## Özellikler
+This project is a REST API service for a TO-DO application developed using **Golang** and the **Gin** framework. Users can create TO-DO lists, add steps to these lists, and manage them. There are two user roles in the system: **regular user** and **admin**.  
 
-*  JWT ile kimlik doğrulama
-*  Rol bazlı yetkilendirme (admin/user)
-*  TO-DO listesi oluşturma, güncelleme ve silme (soft delete)
-*  Her listeye ait adım (step) oluşturma, güncelleme ve silme
-*  Soft delete özelliği ile veri kaybı olmadan silme işlemleri
-*  Admin tüm kullanıcıların verilerine erişebilir
+## Features  
 
-## Kullanılan Teknolojiler
+* Authentication with JWT  
+* Role-based authorization (admin/user)  
+* Creating, updating, and soft-deleting TO-DO lists  
+* Creating, updating, and deleting steps for each list  
+* Soft delete functionality to prevent data loss  
+* Admin can access all users' data  
 
-* **Programlama Dili**: Golang
-* **Framework**: Gin
-* **Kimlik Doğrulama**: JWT
-* **Veritabanı**: In-memory (Mock repository)
-* **API Testi**: Postman
-* **Frontend**: HTML, CSS, JavaScript
-* **Hosting**: Render (frontend için)
+## Technologies Used  
 
-## Kullanıcı Bilgileri
+* **Programming Language**: Golang  
+* **Framework**: Gin  
+* **Authentication**: JWT  
+* **Database**: In-memory (Mock repository)  
+* **API Testing**: Postman  
+* **Frontend**: HTML, CSS, JavaScript  
+* **Hosting**: Render (for frontend)  
 
-**Normal Kullanıcı**
+## User Credentials  
 
-    * Kullanıcı Adı: `user1`
-    * Şifre: `user123`
-   
-**Admin**
+**Regular User**  
 
-    * Kullanıcı Adı: `admin`
-    * Şifre: `admin123`
+    * Username: `user1`  
+    * Password: `user123`  
 
-## Kurulum
+**Admin**  
+
+    * Username: `admin`  
+    * Password: `admin123`  
+
+## Installation  
 
 ```bash
-git clone https://github.com/kullaniciadi/todo-api.git
-cd todo-api
-go mod download
-go run main.go
-```
+git clone https://github.com/kullaniciadi/todo-api.git  
+cd todo-api  
+go mod download  
+go run main.go  
+```  
 
-## API Endpointleri (Postman ile test edilebilir)
+## API Endpoints (Testable via Postman)  
 
-### Authentication
+### Authentication  
 
-| Yöntem | Endpoint | Açıklama        |
-| ------ | -------- | --------------- |
-| POST   | `/login` | JWT token alımı |
+| Method | Endpoint  | Description       |  
+|--------|----------|------------------|  
+| POST   | `/login` | Retrieve JWT token |  
 
-### TO-DO Listeleri
+### TO-DO Lists  
 
-| Yöntem | Endpoint     | Açıklama                               |
-| ------ | ------------ | -------------------------------------- |
-| GET    | `/todos`     | Kullanıcının TO-DO listelerini getirir |
-| POST   | `/todos`     | Yeni TO-DO listesi oluşturur           |
-| PUT    | `/todos/:id` | TO-DO listesini günceller              |
-| DELETE | `/todos/:id` | TO-DO listesini soft-delete yapar      |
+| Method | Endpoint     | Description                              |  
+|--------|------------|-----------------------------------------|  
+| GET    | `/todos`   | Retrieves the user's TO-DO lists       |  
+| POST   | `/todos`   | Creates a new TO-DO list               |  
+| PUT    | `/todos/:id` | Updates a TO-DO list                 |  
+| DELETE | `/todos/:id` | Soft deletes a TO-DO list            |  
 
-### TO-DO Adımları (Steps)
+### TO-DO Steps  
 
-| Yöntem | Endpoint     | Açıklama                                              |
-| ------ | ------------ | ----------------------------------------------------- |
-| GET    | `/steps`     | Kullanıcının adımlarını getirir (admin hepsini görür) |
-| POST   | `/steps`     | Yeni adım oluşturur                                   |
-| PUT    | `/steps/:id` | Adımı günceller                                       |
-| DELETE | `/steps/:id` | Adımı siler (soft delete)                             |
+| Method | Endpoint     | Description                                              |  
+|--------|------------|----------------------------------------------------------|  
+| GET    | `/steps`   | Retrieves user's steps (admin can view all)             |  
+| POST   | `/steps`   | Creates a new step                                      |  
+| PUT    | `/steps/:id` | Updates a step                                        |  
+| DELETE | `/steps/:id` | Deletes a step (soft delete)                          |  
 
-> Admin kullanıcı `/admin/steps` endpointi ile tüm adımları görebilir.
+> The admin user can view all steps via the `/admin/steps` endpoint.  
 
-## Mimari
+## Architecture  
 
-Proje **Clean Architecture** prensiplerine uygun geliştirilmiştir:
+This project follows **Clean Architecture** principles:  
 
-* **Handler (Controller)**: HTTP isteklerini işler.
-* **Service**: İş mantığını barındırır.
-* **Repository**: Veri erişim işlemleri.
-* **Model**: Veri yapıları (struct'lar).
-* **MiddleWare**: Yetkilendirme işlemlerini yapar.
-* **pkg/jwt**: Token işlemlerini yürütür.
-## Frontend
+* **Handler (Controller)**: Handles HTTP requests.  
+* **Service**: Contains business logic.  
+* **Repository**: Manages data access operations.  
+* **Model**: Defines data structures.  
+* **Middleware**: Handles authorization operations.  
+* **pkg/jwt**: Manages token operations.  
 
-Bu projeye ait bir frontend arayüzü de geliştirilmiştir. HTML, CSS ve JavaScript kullanılarak hazırlanmıştır. Aşağıdaki bağlantıdan uygulamayı canlı olarak görüntüleyebilirsiniz:
+## Frontend  
 
-🔗 [Canlı Demo (Render)](https://todo-project-69kz.onrender.com)
+A frontend interface has also been developed for this project using HTML, CSS, and JavaScript. You can view the live demo at the following link:  
 
+🔗 [Live Demo (Render)](https://todo-project-69kz.onrender.com)  
 
-##  Katkı
+## Contribution  
 
-Katkıda bulunmak isterseniz lütfen fork edip pull request gönderin. Büyük değişiklikler öncesinde issue açmanız önerilir.
-##  Lisans
+If you would like to contribute, please fork the repository and submit a pull request. It is recommended to open an issue before making major changes.  
 
-MIT Lisansı
+## License  
+
+MIT License  
